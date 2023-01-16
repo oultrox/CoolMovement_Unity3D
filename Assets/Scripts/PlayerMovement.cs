@@ -14,14 +14,14 @@ public class PlayerMovement : MonoBehaviour {
     private float sensMultiplier = 1f;
 
     [Header("Movement")]
-    [SerializeField] private float moveSpeed = 4500;
+    [SerializeField] private float moveAcceleration = 4500;
     [SerializeField] private float maxSpeed = 20;
     [SerializeField] private LayerMask whatIsGround;
     [SerializeField] private float counterMovement = 0.175f;
     [SerializeField] private float maxSlopeAngle = 35f;
     
     private bool isGrounded;
-    private bool isMovingLeft, isMovingRight, isMovingForward;
+    private bool isMovingLeft, isMovingRight, isMovingForward, isForwardDown;
     private float movementX, movementY;
     private bool jumping, sprinting, crouching;
     private float startMaxSpeed;
@@ -29,8 +29,10 @@ public class PlayerMovement : MonoBehaviour {
     private float desiredX;
 
     [Header("Crouch & Slide")]
-    [SerializeField] private float slideForce = 400;
+    [SerializeField] private float slideAcceleration = 400;
     [SerializeField] private float slideCounterMovement = 0.2f;
+    [SerializeField] private float crouchGravityMultiplier;
+    
     private Vector3 crouchScale = new Vector3(1, 0.5f, 1);
     private Vector3 playerScale;
     private Vector3 normalVector = Vector3.up;
@@ -41,20 +43,19 @@ public class PlayerMovement : MonoBehaviour {
     private bool readyToJump = true;
     private float jumpCooldown = 0.25f;
    
-    
     [Header("Wallrunning")]
     [SerializeField] private LayerMask whatIsWall;
-    [SerializeField] private float wallrunForce, maxWallrunTime, maxWallSpeed;
-    [SerializeField] private float maxWallRunCameraTilt, wallRunCameraTilt;
+    [SerializeField] private float wallRunAcceleration, maxWallrunTime, maxWallSpeed;
+    [SerializeField] private float maxWallRunCameraTilt;
     [SerializeField] private int startDoubleJumps = 1;
-    
+    [SerializeField] private float wallRunForwardMultiplier = 5;
+    private float wallRunCameraTilt;
     private int doubleJumpsLeft;
-    private bool allowDashForceCounter = false;
     private bool cancellingGrounded;
     private bool isWallRight, isWallLeft;
     private bool isWallRunning;
 
-    [Header("Air Dash")]
+    [Header("Dash")]
     [SerializeField] private float dashForce;
     [SerializeField] private float dashCooldown;
     [SerializeField] private float dashTime;
@@ -102,27 +103,17 @@ public class PlayerMovement : MonoBehaviour {
     {
         Look();
         CheckForWall();
-        CheckDoubleJump();
-        CheckRocketFlight();
-        CheckClimb();
-        SonicSpeed();
-
+        CheckDash();
+        //CheckRocketFlight();
+        //CheckClimb();
+        //SonicSpeed();
     }
 
-    private void CheckDoubleJump()
-    {
-        if (jumping && !isGrounded && doubleJumpsLeft >= 1)
-        {
-            Jump();
-            doubleJumpsLeft--;
-        }
-    }
 
-    private void FixedUpdate() 
+    private void FixedUpdate()
     {
         Movement();
     }
-
 
     #region Inputs
     internal void SetInputDirectional(float horizontal, float vertical)
@@ -146,7 +137,6 @@ public class PlayerMovement : MonoBehaviour {
     internal void SetInputForward(bool frontKey)
     {
         isMovingForward = frontKey;
-        CheckDash();
     }
 
     internal void SetInputJump(bool isJumping)
@@ -174,16 +164,24 @@ public class PlayerMovement : MonoBehaviour {
             StartCrouch();
         }
     }
-
+    internal void SetInputDownForward(bool isKeyDown)
+    {
+        isForwardDown = isKeyDown;
+    }
+    #endregion Inputs
 
     private void CheckDash()
     {
-        if (isMovingForward && wTapTimes <= 1)
-        {
+        if (isForwardDown && wTapTimes <= 1 )
+        { 
             wTapTimes++;
             Invoke(nameof(ResetTapTimes), 0.3f);
         }
-        if (wTapTimes == 2 && readyToDash) Dash();
+        if (wTapTimes == 2 && readyToDash)
+        {
+            Debug.Log("Dashing");
+            Dash();
+        }
 
         //SideFlash
         if (Input.GetKeyDown(KeyCode.Mouse1) && flashesLeft > 0 && movementX > 0) SideFlash(true);
@@ -214,14 +212,13 @@ public class PlayerMovement : MonoBehaviour {
     {
         wTapTimes = 0;
     }
-    #endregion Inputs
 
     private void StartCrouch() {
         transform.localScale = crouchScale;
         transform.position = new Vector3(transform.position.x, transform.position.y - 0.5f, transform.position.z);
         if (rBody.velocity.magnitude > 0.5f) {
             if (isGrounded) {
-                rBody.AddForce(orientation.transform.forward * slideForce);
+                rBody.AddForce(orientation.transform.forward * slideAcceleration);
             }
         }
     }
@@ -231,29 +228,53 @@ public class PlayerMovement : MonoBehaviour {
         transform.position = new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z);
     }
 
-    private void Movement() {
+    private void Movement()
+    {
         //Extra gravity
-        rBody.AddForce(Vector3.down * Time.deltaTime * 10);
-        
+        //Needed that the Ground Check works better!
+        float gravityMultiplier = 10;
+
+        if (crouching) gravityMultiplier = crouchGravityMultiplier;
+
+        rBody.AddForce(Vector3.down * Time.deltaTime * gravityMultiplier);
+
         //Find actual velocity relative to where player is looking
         Vector2 mag = FindVelRelativeToLook();
         float xMag = mag.x, yMag = mag.y;
 
         //Counteract sliding and sloppy movement
         CounterMovement(movementX, movementY, mag);
-        
+
         //If holding jump && ready to jump, then jump
-        if (readyToJump && jumping) Jump();
+        if (readyToJump && jumping && isGrounded )
+        {
+            Jump();
+        }
+        else if (jumping && !isGrounded && readyToJump && doubleJumpsLeft >= 1)
+        {
+            Debug.Log("Jumping");
+            Jump();
+            doubleJumpsLeft--;
+        }
+
+        //ResetStuff when touching ground
+        if (isGrounded)
+        {
+            readyToDash = true;
+            readyToRocket = true;
+            doubleJumpsLeft = startDoubleJumps;
+        }
 
         //Set max speed
         float maxSpeed = this.maxSpeed;
-        
-        //If sliding down a ramp, add force down so player stays isGrounded and also builds speed
-        if (crouching && isGrounded && readyToJump) {
+
+        //If sliding down a ramp, add force down so player stays grounded and also builds speed
+        if (crouching && isGrounded && readyToJump)
+        {
             rBody.AddForce(Vector3.down * Time.deltaTime * 3000);
             return;
         }
-        
+
         //If speed is larger than maxspeed, cancel out the input so you don't go over max speed
         if (movementX > 0 && xMag > maxSpeed) movementX = 0;
         if (movementX < 0 && xMag < -maxSpeed) movementX = 0;
@@ -262,19 +283,20 @@ public class PlayerMovement : MonoBehaviour {
 
         //Some multipliers
         float multiplier = 1f, multiplierV = 1f;
-        
+
         // Movement in air
-        if (!isGrounded) {
+        if (!isGrounded)
+        {
             multiplier = 0.5f;
             multiplierV = 0.5f;
         }
-        
+
         // Movement while sliding
         if (isGrounded && crouching) multiplierV = 0f;
 
         //Apply forces to move player
-        rBody.AddForce(orientation.transform.forward * movementY * moveSpeed * Time.deltaTime * multiplier * multiplierV);
-        rBody.AddForce(orientation.transform.right * movementX * moveSpeed * Time.deltaTime * multiplier);
+        rBody.AddForce(orientation.transform.forward * movementY * moveAcceleration * Time.deltaTime * multiplier * multiplierV);
+        rBody.AddForce(orientation.transform.right * movementX * moveAcceleration * Time.deltaTime * multiplier);
     }
 
     private void Jump() 
@@ -302,8 +324,6 @@ public class PlayerMovement : MonoBehaviour {
             rBody.AddForce(normalVector * jumpForce * 0.5f);
 
             rBody.velocity = Vector3.zero;
-            //Disable dashForceCounter if doublejumping while dashing
-            allowDashForceCounter = false;
             Invoke(nameof(ResetJump), jumpCooldown);
         }
         if (isWallRunning)
@@ -324,9 +344,6 @@ public class PlayerMovement : MonoBehaviour {
 
             //Always add forward force
             rBody.AddForce(orientation.forward * jumpForce * 1f);
-
-            //Disable dashForceCounter if doublejumping while dashing
-            allowDashForceCounter = false;
 
             Invoke(nameof(ResetJump), jumpCooldown);
         }
@@ -376,16 +393,16 @@ public class PlayerMovement : MonoBehaviour {
 
         //Slow down sliding
         if (crouching) {
-            rBody.AddForce(moveSpeed * Time.deltaTime * -rBody.velocity.normalized * slideCounterMovement);
+            rBody.AddForce(moveAcceleration * Time.deltaTime * -rBody.velocity.normalized * slideCounterMovement);
             return;
         }
 
         //Counter movement
         if (Math.Abs(mag.x) > threshold && Math.Abs(x) < 0.05f || (mag.x < -threshold && x > 0) || (mag.x > threshold && x < 0)) {
-            rBody.AddForce(moveSpeed * orientation.transform.right * Time.deltaTime * -mag.x * counterMovement);
+            rBody.AddForce(moveAcceleration * orientation.transform.right * Time.deltaTime * -mag.x * counterMovement);
         }
         if (Math.Abs(mag.y) > threshold && Math.Abs(y) < 0.05f || (mag.y < -threshold && y > 0) || (mag.y > threshold && y < 0)) {
-            rBody.AddForce(moveSpeed * orientation.transform.forward * Time.deltaTime * -mag.y * counterMovement);
+            rBody.AddForce(moveAcceleration * orientation.transform.forward * Time.deltaTime * -mag.y * counterMovement);
         }
         
         //Limit diagonal running. This will also cause a full stop if sliding fast and un-crouching, so not optimal.
@@ -403,14 +420,15 @@ public class PlayerMovement : MonoBehaviour {
 
         if (rBody.velocity.magnitude <= maxWallSpeed)
         {
-            rBody.AddForce(orientation.forward * wallrunForce * Time.deltaTime);
+            Debug.Log("Are you applying this force?");
+            rBody.AddForce(orientation.forward * (wallRunAcceleration * wallRunForwardMultiplier) * Time.deltaTime);
             if (isWallRight)
             {
-                rBody.AddForce(orientation.right * (wallrunForce / 5) * Time.deltaTime);
+                rBody.AddForce(orientation.right * (wallRunAcceleration / 5) * Time.deltaTime);
             }
             else
             {
-                rBody.AddForce(-orientation.right * (wallrunForce / 5) * Time.deltaTime);
+                rBody.AddForce(-orientation.right * (wallRunAcceleration / 5) * Time.deltaTime);
             }
         }
     }
@@ -439,8 +457,6 @@ public class PlayerMovement : MonoBehaviour {
         //saves current velocity
         dashStartVector = orientation.forward;
 
-        allowDashForceCounter = true;
-
         readyToDash = false;
         wTapTimes = 0;
 
@@ -458,11 +474,6 @@ public class PlayerMovement : MonoBehaviour {
     {
         rBody.useGravity = true;
 
-        //Counter currentForce
-        if (allowDashForceCounter)
-        {
-            rBody.AddForce(dashStartVector * -dashForce * 0.5f);
-        }
     }
 
     private void SonicSpeed()
@@ -545,9 +556,6 @@ public class PlayerMovement : MonoBehaviour {
 
         rocketActive = true;
 
-        //Disable dashForceCounter if doublejumping while dashing
-        allowDashForceCounter = false;
-
         //Boost forwards and upwards
         rBody.AddForce(1f * rocketForce * Time.deltaTime * orientation.forward);
         rBody.AddForce(2f * rocketForce * Time.deltaTime * Vector3.up);
@@ -603,9 +611,9 @@ public class PlayerMovement : MonoBehaviour {
     {
         //Make sure we are only checking for walkable layers
         int layer = other.gameObject.layer;
-        Debug.Log("Layer collision" + layer);
         if (whatIsGround != (whatIsGround | (1 << layer))) return;
 
+        Debug.Log("You ground?");
         for (int i = 0; i < other.contactCount; i++)
         {
             Vector3 normal = other.contacts[i].normal;

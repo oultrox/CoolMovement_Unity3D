@@ -37,5 +37,7 @@ public class PlayerInput : MonoBehaviour
         movementController.SetInputRight(Input.GetKey(KeyCode.D));
         
         movementController.SetInputForward(Input.GetKey(KeyCode.W));
+        
+        movementController.SetInputDownForward(Input.GetKeyDown(KeyCode.W));
     }
 }

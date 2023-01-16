@@ -6,6 +6,7 @@ TagManager:
   tags:
   - CinemachineTarget
   - Ground
+  - Getable
   layers:
   - Default
   - TransparentFX
@@ -13,7 +14,7 @@ TagManager:
   - Wall
   - Water
   - UI
-  - 
+  - TakenObject
   - 
   - Character
   - Ground
