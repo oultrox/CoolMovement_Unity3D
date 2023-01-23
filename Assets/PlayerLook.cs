@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class PlayerLook : MonoBehaviour
 {
     [SerializeField] private Transform orientation;
+    [SerializeField] private Transform camHolder;
     [SerializeField] private float sensX;
     [SerializeField] private float sensY;
     private float xRotation;
@@ -33,8 +35,17 @@ public class PlayerLook : MonoBehaviour
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
-        transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
+        camHolder.rotation = Quaternion.Euler(xRotation, yRotation, 0);
         orientation.rotation = Quaternion.Euler(0, yRotation, 0);
     } 
     
+    public void DoFov(float value)
+    {
+        GetComponent<Camera>().DOFieldOfView(value, 0.25f);
+    }
+
+    public void DoTilt(float value)
+    {
+        transform.DOLocalRotate(new Vector3(0, 0, value), 0.25f);
+    }
 }

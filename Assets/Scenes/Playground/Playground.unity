@@ -551,6 +551,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e5f4daf24146ee040b5a2d7a73b30aa0, type: 3}
+--- !u!4 &503584841 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1469328103, guid: dde77f83bac93314688f089093c7d0ed,
+    type: 3}
+  m_PrefabInstance: {fileID: 4054604926666724599}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &542508511
 GameObject:
   m_ObjectHideFlags: 0
@@ -1549,9 +1555,9 @@ PrefabInstance:
         type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7b846d8f536f007498c941069487ce81, type: 3}
---- !u!20 &1909811073 stripped
+--- !u!20 &1844219999 stripped
 Camera:
-  m_CorrespondingSourceObject: {fileID: 1909811073, guid: dde77f83bac93314688f089093c7d0ed,
+  m_CorrespondingSourceObject: {fileID: 1404389065, guid: dde77f83bac93314688f089093c7d0ed,
     type: 3}
   m_PrefabInstance: {fileID: 4054604926666724599}
   m_PrefabAsset: {fileID: 0}
@@ -1655,6 +1661,18 @@ PrefabInstance:
         type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7b846d8f536f007498c941069487ce81, type: 3}
+--- !u!114 &2096745541 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1909811071, guid: dde77f83bac93314688f089093c7d0ed,
+    type: 3}
+  m_PrefabInstance: {fileID: 4054604926666724599}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1a0b1bcb758d7748a4ea89a9b83bf6a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &53103663806296853 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3782843080684848542, guid: a8044a0d3e6ccd74fa1b27cccaf64c04,
@@ -1881,9 +1899,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2146268943154189417, guid: b8768222e073e724889c9cd46527922a,
         type: 3}
+      propertyPath: lerpFactor
+      value: 2000
+      objectReference: {fileID: 0}
+    - target: {fileID: 2146268943154189417, guid: b8768222e073e724889c9cd46527922a,
+        type: 3}
       propertyPath: mainCamera
       value: 
-      objectReference: {fileID: 1909811073}
+      objectReference: {fileID: 1844219999}
     - target: {fileID: 2146268943154189417, guid: b8768222e073e724889c9cd46527922a,
         type: 3}
       propertyPath: rayMaxRange
@@ -2028,6 +2051,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 428325108, guid: dde77f83bac93314688f089093c7d0ed, type: 3}
+      propertyPath: _playerLook
+      value: 
+      objectReference: {fileID: 2096745541}
+    - target: {fileID: 428325108, guid: dde77f83bac93314688f089093c7d0ed, type: 3}
       propertyPath: orientation
       value: 
       objectReference: {fileID: 983237468}
@@ -2075,6 +2102,14 @@ PrefabInstance:
       propertyPath: whatIsGround.m_Bits
       value: 576
       objectReference: {fileID: 0}
+    - target: {fileID: 1404389065, guid: dde77f83bac93314688f089093c7d0ed, type: 3}
+      propertyPath: m_CullingMask.m_Bits
+      value: 64
+      objectReference: {fileID: 0}
+    - target: {fileID: 1909811071, guid: dde77f83bac93314688f089093c7d0ed, type: 3}
+      propertyPath: camHolder
+      value: 
+      objectReference: {fileID: 503584841}
     - target: {fileID: 3315103716823217856, guid: dde77f83bac93314688f089093c7d0ed,
         type: 3}
       propertyPath: m_RootOrder

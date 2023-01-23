@@ -35,7 +35,6 @@ public class PlayerMovementController : MonoBehaviour {
     private RaycastHit slopeHit;
     private bool exitingSlope;
 
-
     public Transform orientation;
 
     private PlayerInput _playerInput;

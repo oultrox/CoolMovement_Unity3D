@@ -7,6 +7,7 @@ public class WallRunning : MonoBehaviour
 
     [Header("Reference")]
     [SerializeField] private Transform orientation;
+    [SerializeField] private PlayerLook _playerLook;
     private PlayerMovementController movementController;
     private Rigidbody rBody;
 
@@ -110,11 +111,19 @@ public class WallRunning : MonoBehaviour
     private void StartWallRun()
     {
         movementController.IsWallRunning = true;
+        rBody.velocity = new Vector3(rBody.velocity.x, 0, rBody.velocity.z);
+
+        _playerLook.DoFov(90);
+        if (wallLeft) _playerLook.DoTilt(-5);
+        if (wallRight) _playerLook.DoTilt(5);
     }
 
     private void StopWallRun()
     {
         movementController.IsWallRunning = false;
+
+        _playerLook.DoFov(80);
+        _playerLook.DoTilt(0);
     }
 
     private void WallRunningMovement()
