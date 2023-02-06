@@ -20,7 +20,9 @@ public class WallRunning : MonoBehaviour
     [SerializeField] private float wallJumpForce;
     [SerializeField] private float wallJumpSideRoce;
     [SerializeField] private float exitingWallTime = 0.2f;
-    
+    [Range(0.2f,10f)]
+    [SerializeField] private float smoothWallRunningTransition = 1f;
+
     [Header("Detection")]
     [SerializeField] private float wallCheckDistance;
     [SerializeField] private float minJumpHeight;
@@ -33,6 +35,7 @@ public class WallRunning : MonoBehaviour
     private bool upWardsRunning, downWardsRunning;
     private bool exitingWall;
     private float exitingWallTimer;
+    private Vector3 vectorVelocity = Vector3.zero;
 
     // Start is called before the first frame update
     void Start()
@@ -111,7 +114,8 @@ public class WallRunning : MonoBehaviour
     private void StartWallRun()
     {
         movementController.IsWallRunning = true;
-        rBody.velocity = new Vector3(rBody.velocity.x, 0, rBody.velocity.z);
+        rBody.velocity = Vector3.Lerp(rBody.velocity, new Vector3(rBody.velocity.x, 0, rBody.velocity.z), 
+            Time.deltaTime * smoothWallRunningTransition);
 
         _playerLook.DoFov(90);
         if (wallLeft) _playerLook.DoTilt(-5);
@@ -120,8 +124,10 @@ public class WallRunning : MonoBehaviour
 
     private void StopWallRun()
     {
-        movementController.IsWallRunning = false;
+        if (!movementController.IsWallRunning)
+            return;
 
+        movementController.IsWallRunning = false;
         _playerLook.DoFov(80);
         _playerLook.DoTilt(0);
     }

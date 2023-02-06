@@ -849,9 +849,9 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 851412867, guid: dde77f83bac93314688f089093c7d0ed, type: 3}
-      propertyPath: m_Enabled
-      value: 0
+    - target: {fileID: 428325108, guid: dde77f83bac93314688f089093c7d0ed, type: 3}
+      propertyPath: smoothWallRunningTransition
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3315103716823217856, guid: dde77f83bac93314688f089093c7d0ed,
         type: 3}

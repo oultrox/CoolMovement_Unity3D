@@ -754,7 +754,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7757047744574178535}
-  - component: {fileID: 851412867}
   m_Layer: 0
   m_Name: WeaponPistol
   m_TagString: Untagged
@@ -778,55 +777,6 @@ Transform:
   m_Father: {fileID: 494753860}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &851412867
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 607608732334483703}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8eae670b2e1f1a247b48035fb6b66f0c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  WeaponName: 
-  WeaponIcon: {fileID: 0}
-  CrosshairDataDefault:
-    CrosshairSprite: {fileID: 0}
-    CrosshairSize: 0
-    CrosshairColor: {r: 0, g: 0, b: 0, a: 0}
-  CrosshairDataTargetInSight:
-    CrosshairSprite: {fileID: 0}
-    CrosshairSize: 0
-    CrosshairColor: {r: 0, g: 0, b: 0, a: 0}
-  WeaponRoot: {fileID: 0}
-  WeaponMuzzle: {fileID: 0}
-  ShootType: 0
-  ProjectilePrefab: {fileID: 0}
-  DelayBetweenShots: 0.5
-  BulletSpreadAngle: 0
-  BulletsPerShot: 1
-  RecoilForce: 1
-  AimZoomRatio: 1
-  AimOffset: {x: 0, y: 0, z: 0}
-  AutomaticReload: 1
-  HasPhysicalBullets: 0
-  ClipSize: 30
-  ShellCasing: {fileID: 0}
-  EjectionPort: {fileID: 0}
-  ShellCasingEjectionForce: 2
-  ShellPoolSize: 1
-  AmmoReloadRate: 1
-  AmmoReloadDelay: 2
-  MaxAmmo: 8
-  AutomaticReleaseOnCharged: 0
-  MaxChargeDuration: 2
-  AmmoUsedOnStartCharge: 1
-  AmmoUsageRateWhileCharging: 1
-  WeaponAnimator: {fileID: 0}
-  MuzzleFlashPrefab: {fileID: 0}
-  UnparentMuzzleFlash: 0
 --- !u!1 &3318205420285248959
 GameObject:
   m_ObjectHideFlags: 0
