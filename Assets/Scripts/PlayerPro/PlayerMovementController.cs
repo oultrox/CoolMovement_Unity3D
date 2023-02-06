@@ -2,6 +2,16 @@
 using System;
 using UnityEngine;
 
+public enum MovementState
+{
+    walking,
+    sprinting,
+    wallRunning,
+    climbing,
+    crouching,
+    air
+}
+
 public class PlayerMovementController : MonoBehaviour {
 
     [Header("Movement")]
@@ -10,9 +20,13 @@ public class PlayerMovementController : MonoBehaviour {
     public float sprintSpeed;
     public float groundDrag;
     [SerializeField] private float wallRunningSpeed;
+    [SerializeField] private float climbSpeed;
+
     private float horizontalInput;
     private float verticalInput;
-    private bool isMovingLeft, isMovingRight, isJumping, isCrouching, isMovingForward, isWallRunning;
+    private bool isMovingLeft, isMovingRight, isMovingForward; 
+    private bool isJumping, isCrouching, isWallRunning, isClimbing;
+    private bool isExitingWall;
 
     [Header("Jumping")]
     public float jumpForce;
@@ -20,15 +34,10 @@ public class PlayerMovementController : MonoBehaviour {
     public float airMultiplier;
     private bool readyToJump;
 
-    [Header("Crouching")]
-    public float crouchSpeed;
-    public float crouchYScale;
-    private float startYScale;
-
     [Header("Ground Check")]
     public float playerHeight;
     public LayerMask whatIsGround;
-    bool grounded;
+    private bool isGrounded;
 
     [Header("Slope Handling")]
     public float maxSlopeAngle;
@@ -37,46 +46,42 @@ public class PlayerMovementController : MonoBehaviour {
 
     public Transform orientation;
 
-    private PlayerInput _playerInput;
+    private PlayerInput playerInput;
     private Vector3 moveDirection;
 
     private Rigidbody rb;
 
     public MovementState state;
 
+    #region Properties
     public bool IsWallRunning { get => isWallRunning; set => isWallRunning = value; }
+    public bool IsGrounded { get => isGrounded; set => isGrounded = value; }
+    public bool IsClimbing { get => isClimbing; set => isClimbing = value; }
+    public bool IsExitingWall { get => isExitingWall; set => isExitingWall = value; }
+    #endregion
 
-    public enum MovementState
+    private void Awake()
     {
-        walking,
-        sprinting,
-        wallRunning,
-        crouching,
-        air
+        rb = GetComponent<Rigidbody>();
+        playerInput = GetComponent<PlayerInput>();
     }
 
     private void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        _playerInput = GetComponent<PlayerInput>();
         rb.freezeRotation = true;
-
         readyToJump = true;
-
-        startYScale = transform.localScale.y;
     }
 
     private void Update()
     {
-        // ground check
-        grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
+        isGrounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
 
         MyInput();
         SpeedControl();
-        StateHandler();
+        CheckState();
 
         // handle drag
-        if (grounded)
+        if (isGrounded)
             rb.drag = groundDrag;
         else
             rb.drag = 0;
@@ -89,65 +94,49 @@ public class PlayerMovementController : MonoBehaviour {
 
     private void MyInput()
     {
-        horizontalInput = _playerInput.GetHorizontalInput();
-        verticalInput = _playerInput.GetVerticalInput();
+        horizontalInput = playerInput.GetHorizontalInput();
+        verticalInput = playerInput.GetVerticalInput();
 
         // when to jump
-        if (_playerInput.GetInputJump() && readyToJump && grounded)
+        if (playerInput.GetInputJump() && readyToJump && isGrounded)
         {
             readyToJump = false;
-
             Jump();
-
             Invoke(nameof(ResetJump), jumpCooldown);
-        }
-
-        // start crouch
-        if (_playerInput.GetInputDownCrouch())
-        {
-            transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
-            rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
-        }
-
-        // stop crouch
-        if (_playerInput.GetInputUpCrouch())
-        {
-            transform.localScale = new Vector3(transform.localScale.x, startYScale, transform.localScale.z);
         }
     }
 
-    private void StateHandler()
+    private void CheckState()
     {
+        // Climbing 
+        if(isClimbing)
+        {
+            state = MovementState.climbing;
+            moveSpeed = climbSpeed;
+        }
 
-        //Mode - Wallruning
-        if(isWallRunning)
+        // Wallruning
+        else if(isWallRunning)
         {
             state = MovementState.wallRunning;
             moveSpeed = wallRunningSpeed;
         }
 
-        // Mode - Crouching
-        else if (_playerInput.GetInputCrouch())
-        {
-            state = MovementState.crouching;
-            moveSpeed = crouchSpeed;
-        }
-
-        // Mode - Sprinting
-        else if (grounded && _playerInput.GetInputLeftShift())
+        // Sprinting
+        else if (isGrounded && playerInput.GetInputLeftShift())
         {
             state = MovementState.sprinting;
             moveSpeed = sprintSpeed;
         }
 
-        // Mode - Walking
-        else if (grounded)
+        // Walking
+        else if (isGrounded)
         {
             state = MovementState.walking;
             moveSpeed = walkSpeed;
         }
 
-        // Mode - Air
+        // Air
         else
         {
             state = MovementState.air;
@@ -156,24 +145,26 @@ public class PlayerMovementController : MonoBehaviour {
 
     private void MovePlayer()
     {
+        if (isExitingWall) return;
+
         // calculate movement direction
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
 
         // on slope
         if (OnSlope() && !exitingSlope)
         {
-            rb.AddForce(GetSlopeMoveDirection() * moveSpeed * 20f, ForceMode.Force);
+            rb.AddForce(GetSlopeMoveDirection(moveDirection) * moveSpeed * 20f, ForceMode.Force);
 
             if (rb.velocity.y > 0)
                 rb.AddForce(Vector3.down * 80f, ForceMode.Force);
         }
 
         // on ground
-        else if (grounded)
+        else if (isGrounded)
             rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
 
         // in air
-        else if (!grounded)
+        else if (!isGrounded)
             rb.AddForce(moveDirection.normalized * moveSpeed * 10f * airMultiplier, ForceMode.Force);
 
         // turn gravity off while on slope
@@ -219,7 +210,7 @@ public class PlayerMovementController : MonoBehaviour {
         exitingSlope = false;
     }
 
-    private bool OnSlope()
+    public bool OnSlope()
     {
         if (Physics.Raycast(transform.position, Vector3.down, out slopeHit, playerHeight * 0.5f + 0.3f))
         {
@@ -230,8 +221,8 @@ public class PlayerMovementController : MonoBehaviour {
         return false;
     }
 
-    private Vector3 GetSlopeMoveDirection()
+    public Vector3 GetSlopeMoveDirection(Vector3 direction)
     {
-        return Vector3.ProjectOnPlane(moveDirection, slopeHit.normal).normalized;
+        return Vector3.ProjectOnPlane(direction, slopeHit.normal).normalized;
     }
 }

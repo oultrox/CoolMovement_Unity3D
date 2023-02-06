@@ -8,8 +8,6 @@ public class WallRunning : MonoBehaviour
     [Header("Reference")]
     [SerializeField] private Transform orientation;
     [SerializeField] private PlayerLook _playerLook;
-    private PlayerMovementController movementController;
-    private Rigidbody rBody;
 
     [Header("Basic")]
     [SerializeField] private LayerMask whatIsWall;
@@ -21,12 +19,14 @@ public class WallRunning : MonoBehaviour
     [SerializeField] private float wallJumpSideRoce;
     [SerializeField] private float exitingWallTime = 0.2f;
     [Range(0.2f,10f)]
-    [SerializeField] private float smoothWallRunningTransition = 1f;
+    [SerializeField] private float wallRunningSmoothFactor = 1f;
 
     [Header("Detection")]
     [SerializeField] private float wallCheckDistance;
     [SerializeField] private float minJumpHeight;
 
+    private PlayerMovementController movementController;
+    private Rigidbody rBody;
     private float horizontalInput;
     private float verticalInput;
     private PlayerInput playerInput;
@@ -37,7 +37,7 @@ public class WallRunning : MonoBehaviour
     private float exitingWallTimer;
     private Vector3 vectorVelocity = Vector3.zero;
 
-    // Start is called before the first frame update
+
     void Start()
     {
         rBody = GetComponent<Rigidbody>();
@@ -45,7 +45,6 @@ public class WallRunning : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         CheckForWall();
@@ -115,7 +114,7 @@ public class WallRunning : MonoBehaviour
     {
         movementController.IsWallRunning = true;
         rBody.velocity = Vector3.Lerp(rBody.velocity, new Vector3(rBody.velocity.x, 0, rBody.velocity.z), 
-            Time.deltaTime * smoothWallRunningTransition);
+            Time.deltaTime * wallRunningSmoothFactor);
 
         _playerLook.DoFov(90);
         if (wallLeft) _playerLook.DoTilt(-5);

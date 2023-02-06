@@ -907,6 +907,8 @@ GameObject:
   - component: {fileID: 5278733037026597137}
   - component: {fileID: 6190352071170528871}
   - component: {fileID: 428325108}
+  - component: {fileID: 1411641372}
+  - component: {fileID: 1411641373}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -978,11 +980,10 @@ MonoBehaviour:
   sprintSpeed: 20
   groundDrag: 5
   wallRunningSpeed: 30
+  climbSpeed: 20
   jumpForce: 35
   jumpCooldown: 0.25
   airMultiplier: 0.4
-  crouchSpeed: 3.5
-  crouchYScale: 0.5
   playerHeight: 1.8
   whatIsGround:
     serializedVersion: 2
@@ -1028,8 +1029,52 @@ MonoBehaviour:
   wallJumpForce: 20
   wallJumpSideRoce: 20
   exitingWallTime: 0.2
+  wallRunningSmoothFactor: 1
   wallCheckDistance: 0.7
   minJumpHeight: 1
+--- !u!114 &1411641372
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6991122635665545309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23e7311e1c0aaff4a82451fbb7b5756f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  orientation: {fileID: 2772598066046365506}
+  whatIsWall:
+    serializedVersion: 2
+    m_Bits: 8
+  climbSpeed: 20
+  maxClimbTime: 0.75
+  climbSmoothFactor: 10
+  detectionLength: 0.7
+  sphereCastRadius: 0.25
+  maxWallLookAngle: 30
+  climbJumpForce: 14
+  climbJumpBackForce: 12
+  climbJumpsAmount: 2
+  exitWallTime: 0.2
+--- !u!114 &1411641373
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6991122635665545309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b71e1b43336c3d6469833bbc08297519, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  orientation: {fileID: 2772598066046365506}
+  playerTransform: {fileID: 162352397435701531}
+  maxSlideTime: 10
+  slideForce: 200
+  slideYScale: 0.5
 --- !u!1 &7292436546178077579
 GameObject:
   m_ObjectHideFlags: 0
