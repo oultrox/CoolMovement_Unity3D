@@ -63,9 +63,17 @@ public class PlayerSliding : PlayerComponent
     private void SlideMovement()
     {
         inputDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
-        rBody.AddForce(inputDirection.normalized * slideForce, ForceMode.Force);
-        slideTimer -= Time.deltaTime;
 
+        if (playerController.OnSlope() == false || rBody.velocity.y > -0.1f)
+        {
+            rBody.AddForce(inputDirection.normalized * slideForce, ForceMode.Force);
+            slideTimer -= Time.deltaTime;
+        }
+        else
+        {
+            rBody.AddForce(playerController.GetSlopeMoveDirection(inputDirection) * slideForce, ForceMode.Force);
+        }
+             
         if (slideTimer <= 0) StopSlide();
 
     }
