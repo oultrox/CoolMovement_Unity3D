@@ -21,6 +21,7 @@ public class PlayerMovementController : MonoBehaviour {
     public float groundDrag;
     [SerializeField] private float wallRunningSpeed;
     [SerializeField] private float climbSpeed;
+    [SerializeField] private FloatEventChannelSO _getPlayerSpeed;
 
     private float horizontalInput;
     private float verticalInput;
@@ -48,9 +49,8 @@ public class PlayerMovementController : MonoBehaviour {
 
     private PlayerInput playerInput;
     private Vector3 moveDirection;
-
     private Rigidbody rb;
-
+    private float _currentVelocity;
     public MovementState state;
 
     #region Properties
@@ -74,12 +74,24 @@ public class PlayerMovementController : MonoBehaviour {
 
     private void Update()
     {
-        isGrounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
-
+        CheckGround();
         MyInput();
-        SpeedControl();
-        CheckState();
+        ControlSpeed();
+        CheckMovementState();
+        HandleDrag();
 
+        //Just for debug.
+        _currentVelocity = rb.velocity.magnitude;
+        _getPlayerSpeed.OnEventRaised.Invoke(_currentVelocity);
+    }
+
+    private void CheckGround()
+    {
+        isGrounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
+    }
+
+    private void HandleDrag()
+    {
         // handle drag
         if (isGrounded)
             rb.drag = groundDrag;
@@ -106,7 +118,7 @@ public class PlayerMovementController : MonoBehaviour {
         }
     }
 
-    private void CheckState()
+    private void CheckMovementState()
     {
         // Climbing 
         if(isClimbing)
@@ -171,7 +183,7 @@ public class PlayerMovementController : MonoBehaviour {
         rb.useGravity = !OnSlope();
     }
 
-    private void SpeedControl()
+    private void ControlSpeed()
     {
         // limiting speed on slope
         if (OnSlope() && !exitingSlope)
