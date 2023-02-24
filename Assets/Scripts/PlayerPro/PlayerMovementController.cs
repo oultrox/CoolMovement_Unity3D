@@ -21,7 +21,7 @@ public class PlayerMovementController : MonoBehaviour {
     public float groundDrag;
     [SerializeField] private float wallRunningSpeed;
     [SerializeField] private float climbSpeed;
-    [SerializeField] private FloatEventChannelSO _getPlayerSpeed;
+    [SerializeField] private FloatEventChannelSO playerSpeedChannel;
 
     private float horizontalInput;
     private float verticalInput;
@@ -75,14 +75,14 @@ public class PlayerMovementController : MonoBehaviour {
     private void Update()
     {
         CheckGround();
-        MyInput();
+        GetInputs();
         ControlSpeed();
         CheckMovementState();
         HandleDrag();
 
         //Just for debug.
         _currentVelocity = rb.velocity.magnitude;
-        _getPlayerSpeed.OnEventRaised.Invoke(_currentVelocity);
+        playerSpeedChannel.OnEventRaised.Invoke(_currentVelocity);
     }
 
     private void CheckGround()
@@ -104,7 +104,7 @@ public class PlayerMovementController : MonoBehaviour {
         MovePlayer();
     }
 
-    private void MyInput()
+    private void GetInputs()
     {
         horizontalInput = playerInput.GetHorizontalInput();
         verticalInput = playerInput.GetVerticalInput();
