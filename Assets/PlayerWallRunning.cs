@@ -2,11 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WallRunning : MonoBehaviour
+public class PlayerWallRunning : PlayerMovementComponent
 {
 
-    [Header("Reference")]
-    [SerializeField] private Transform orientation;
     [SerializeField] private PlayerLook _playerLook;
 
     [Header("Basic")]
@@ -25,38 +23,27 @@ public class WallRunning : MonoBehaviour
     [SerializeField] private float wallCheckDistance;
     [SerializeField] private float minJumpHeight;
 
-    private PlayerMovementController movementController;
-    private Rigidbody rBody;
     private float horizontalInput;
     private float verticalInput;
-    private PlayerInput playerInput;
     private RaycastHit leftWallHit, rightWallHit;
     private bool wallLeft, wallRight;
     private bool upWardsRunning, downWardsRunning;
-    private bool exitingWall;
+    private bool isExitingWall;
     private float exitingWallTimer;
-    private Vector3 vectorVelocity = Vector3.zero;
 
-
-    void Start()
-    {
-        rBody = GetComponent<Rigidbody>();
-        movementController = GetComponent<PlayerMovementController>();
-        playerInput = GetComponent<PlayerInput>();
-    }
 
     void Update()
     {
+        GetInputs();
         CheckForWall();
         CheckState();
     }
 
     private void FixedUpdate()
     {
-        if (movementController.IsWallRunning)
-        {
-            WallRunningMovement();
-        }
+        if (!playerController.IsWallRunning) return;
+
+        WallRunningMovement();
     }
 
     private void CheckForWall()
@@ -69,50 +56,48 @@ public class WallRunning : MonoBehaviour
     {
         return !Physics.Raycast(transform.position, Vector3.down, minJumpHeight, whatIsGround);
     }
-
+    
     private void CheckState()
     {
-        horizontalInput = playerInput.GetHorizontalInput();
-        verticalInput = playerInput.GetVerticalInput();
 
-        upWardsRunning = playerInput.GetInputLeftShift();
-        downWardsRunning = playerInput.GetInputCrouch();
-
-
-        // State 1 - wallrunning
-        if ((wallLeft || wallRight) && verticalInput > 0 && AboveGround() && !exitingWall)
+        if ((wallLeft || wallRight) && verticalInput > 0 && AboveGround() && !isExitingWall)
         {
-            if (!movementController.IsWallRunning)
+            if (!playerController.IsWallRunning)
                 StartWallRun();
 
-            // Wall jump
-            if(playerInput.GetInputJump())
+            if (playerInput.GetInputJump())
                 WallJump();
 
         }
-        // State 3 - None
-        else if(exitingWall)
+        else if (isExitingWall)
         {
-            if(movementController.IsWallRunning)
+            if (playerController.IsWallRunning)
                 StopWallRun();
 
             if (exitingWallTimer > 0)
                 exitingWallTimer -= Time.deltaTime;
 
             if (exitingWallTimer <= 0)
-                exitingWall = false;
-
+                isExitingWall = false;
         }
-        // State 3 - None
         else
         {
             StopWallRun();
         }
     }
 
+    private void GetInputs()
+    {
+        horizontalInput = playerInput.GetHorizontalInput();
+        verticalInput = playerInput.GetVerticalInput();
+
+        upWardsRunning = playerInput.GetInputLeftShift();
+        downWardsRunning = playerInput.GetInputCrouch();
+    }
+
     private void StartWallRun()
     {
-        movementController.IsWallRunning = true;
+        playerController.IsWallRunning = true;
         rBody.velocity = Vector3.Lerp(rBody.velocity, new Vector3(rBody.velocity.x, 0, rBody.velocity.z), 
             Time.deltaTime * wallRunningSmoothFactor);
 
@@ -123,10 +108,10 @@ public class WallRunning : MonoBehaviour
 
     private void StopWallRun()
     {
-        if (!movementController.IsWallRunning)
+        if (!playerController.IsWallRunning)
             return;
 
-        movementController.IsWallRunning = false;
+        playerController.IsWallRunning = false;
         _playerLook.DoFov(80);
         _playerLook.DoTilt(0);
     }
@@ -158,7 +143,7 @@ public class WallRunning : MonoBehaviour
 
     private void WallJump()
     {
-        exitingWall = true;
+        isExitingWall = true;
         exitingWallTimer = exitingWallTime;
 
         Vector3 wallNormal = wallRight ? rightWallHit.normal : leftWallHit.normal;

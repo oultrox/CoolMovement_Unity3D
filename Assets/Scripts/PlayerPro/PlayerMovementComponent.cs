@@ -2,7 +2,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(PlayerMovementController))]
 [RequireComponent(typeof(Rigidbody))]
-public abstract class PlayerComponent : MonoBehaviour
+public abstract class PlayerMovementComponent : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] protected Transform orientation;

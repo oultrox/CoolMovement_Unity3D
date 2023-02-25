@@ -849,6 +849,22 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 428325108, guid: dde77f83bac93314688f089093c7d0ed, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 428325108, guid: dde77f83bac93314688f089093c7d0ed, type: 3}
+      propertyPath: exitingWallTime
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1411641372, guid: dde77f83bac93314688f089093c7d0ed, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1411641373, guid: dde77f83bac93314688f089093c7d0ed, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3315103716823217856, guid: dde77f83bac93314688f089093c7d0ed,
         type: 3}
       propertyPath: m_RootOrder

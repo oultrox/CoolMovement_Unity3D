@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerSliding : PlayerComponent
+public class PlayerSliding : PlayerMovementComponent
 {
     [SerializeField] private Transform playerTransform;
     

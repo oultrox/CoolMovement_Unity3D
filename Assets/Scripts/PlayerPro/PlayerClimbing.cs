@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class PlayerClimbing : MonoBehaviour
+public class PlayerClimbing : PlayerMovementComponent
 {
-    [Header("References")]
-    [SerializeField] private Transform orientation;
     [SerializeField] LayerMask whatIsWall;
 
     [Header("Climbing")]
@@ -37,19 +35,11 @@ public class PlayerClimbing : MonoBehaviour
     private readonly float minWallNormalAngleChange = 5;
     private float wallLookAngle;
     private float climbTimer;
-    private PlayerMovementController movementController;
     private RaycastHit frontwallHit;
     private bool isClimbing;
     private bool isFrontWall;
-    private Rigidbody rBody;
     private bool isNewWall;
     private Vector3 forceToApply;
-
-    private void Awake()
-    {
-        rBody = GetComponent<Rigidbody>();
-        movementController = GetComponent<PlayerMovementController>();
-    }
 
     void Update()
     {
@@ -62,29 +52,56 @@ public class PlayerClimbing : MonoBehaviour
     {
         if (isFrontWall && Input.GetKey(KeyCode.W) && wallLookAngle < maxWallLookAngle)
         {
-            if (!isClimbing && climbTimer > 0) StartClimbing();
-            if (climbTimer > 0) climbTimer -= Time.deltaTime;
-            if (climbTimer < 0) StopClimbing();
+            HandleClimbing();
         }
-        else if(isExitingWall)
+        else if (isExitingWall)
         {
-            if (isClimbing) StopClimbing();
-            
-            if (exitWallTimer > 0) exitWallTimer -= Time.deltaTime;
-            if (exitWallTimer < 0) isExitingWall = false;
-            movementController.IsExitingWall = isExitingWall;
+            HandleExitingWall();
         }
         else
         {
-            if (isClimbing) StopClimbing();
+            StopClimbing();
         }
 
-        if (isFrontWall && Input.GetKeyDown(jumpKey) && climbJumpsLeft > 0) ClimbJump();
+        HandleClimbJumps();
     }
 
+    private void HandleClimbing()
+    {
+        if (!isClimbing && climbTimer > 0)
+        {
+            StartClimbing();
+        }
 
+        climbTimer -= Time.deltaTime;
 
-    
+        if (climbTimer <= 0)
+        {
+            StopClimbing();
+        }
+    }
+
+    private void HandleExitingWall()
+    {
+        StopClimbing();
+
+        exitWallTimer -= Time.deltaTime;
+
+        if (exitWallTimer <= 0)
+        {
+            isExitingWall = false;
+            playerController.IsExitingWall = false;
+        }
+    }
+
+    private void HandleClimbJumps()
+    {
+        if (isFrontWall && Input.GetKeyDown(jumpKey) && climbJumpsLeft > 0)
+        {
+            ClimbJump();
+        }
+    }
+
     private void WallCheck()
     {
         isFrontWall = Physics.SphereCast(transform.position, sphereCastRadius, orientation.forward, out frontwallHit, 
@@ -94,7 +111,7 @@ public class PlayerClimbing : MonoBehaviour
         
         isNewWall = frontwallHit.transform != lastWall || Mathf.Abs(Vector3.Angle(lastWallNormal, frontwallHit.normal)) > minWallNormalAngleChange;
         
-        if((isFrontWall && isNewWall) || movementController.IsGrounded)
+        if((isFrontWall && isNewWall) || playerController.IsGrounded)
         {
             climbTimer = maxClimbTime;
             climbJumpsLeft = climbJumpsAmount;
@@ -104,7 +121,7 @@ public class PlayerClimbing : MonoBehaviour
     private void StartClimbing()
     {
         isClimbing = true;
-        movementController.IsClimbing = isClimbing;
+        playerController.IsClimbing = isClimbing;
 
         lastWall = frontwallHit.transform;
         lastWallNormal = frontwallHit.normal;
@@ -122,7 +139,7 @@ public class PlayerClimbing : MonoBehaviour
     private void StopClimbing()
     {
         isClimbing = false;
-        movementController.IsClimbing = isClimbing;
+        playerController.IsClimbing = isClimbing;
     }
 
     
@@ -130,7 +147,7 @@ public class PlayerClimbing : MonoBehaviour
     {
         isExitingWall = true;
         exitWallTimer = exitWallTime;
-        movementController.IsExitingWall = true;
+        playerController.IsExitingWall = true;
 
         forceToApply = transform.up * climbJumpForce + frontwallHit.normal * climbJumpBackForce;
         rBody.velocity = new Vector3(rBody.velocity.x, 0, rBody.velocity.z);
