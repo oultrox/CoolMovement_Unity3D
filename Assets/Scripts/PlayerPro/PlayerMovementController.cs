@@ -2,56 +2,48 @@
 using System;
 using UnityEngine;
 
-public enum MovementState
-{
-    walking,
-    sprinting,
-    wallRunning,
-    climbing,
-    crouching,
-    air
-}
-
 public class PlayerMovementController : MonoBehaviour {
 
     [Header("Movement")]
     private float moveSpeed;
-    public float walkSpeed;
-    public float sprintSpeed;
-    public float groundDrag;
+    [SerializeField] private float walkSpeed = 20;
+    [SerializeField] private float sprintSpeed = 20;
+    [SerializeField] private float groundDrag = 5;
     [SerializeField] private float wallRunningSpeed;
     [SerializeField] private float climbSpeed;
     [SerializeField] private FloatEventChannelSO playerSpeedChannel;
 
     private float horizontalInput;
     private float verticalInput;
-    private bool isMovingLeft, isMovingRight, isMovingForward; 
+    private bool isMovingLeft, isMovingRight, isMovingForward;
     private bool isJumping, isCrouching, isWallRunning, isClimbing;
     private bool isExitingWall;
 
     [Header("Jumping")]
-    public float jumpForce;
-    public float jumpCooldown;
-    public float airMultiplier;
+    [SerializeField] private float jumpForce = 35;
+    [SerializeField] private float jumpCooldown = 0.25f;
+    [SerializeField] private float airMultiplier = 0.4f;
     private bool readyToJump;
 
     [Header("Ground Check")]
-    public float playerHeight;
-    public LayerMask whatIsGround;
+    [SerializeField] private float playerHeight = 1.8f;
+    [SerializeField] private LayerMask whatIsGround;
     private bool isGrounded;
 
     [Header("Slope Handling")]
-    public float maxSlopeAngle;
+    [SerializeField] private float maxSlopeAngle = 40;
+    [SerializeField] private Transform orientation;
+    
+    //Just for showcasing the state debug
+    [SerializeField] private MovementState state;
+
     private RaycastHit slopeHit;
     private bool exitingSlope;
-
-    public Transform orientation;
-
     private PlayerInput playerInput;
     private Vector3 moveDirection;
     private Rigidbody rb;
     private float _currentVelocity;
-    public MovementState state;
+    
 
     #region Properties
     public bool IsWallRunning { get => isWallRunning; set => isWallRunning = value; }
