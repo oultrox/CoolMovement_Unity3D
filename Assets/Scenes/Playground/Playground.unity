@@ -853,17 +853,10 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 428325108, guid: dde77f83bac93314688f089093c7d0ed, type: 3}
-      propertyPath: exitingWallTime
-      value: 0.3
-      objectReference: {fileID: 0}
-    - target: {fileID: 1411641372, guid: dde77f83bac93314688f089093c7d0ed, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1411641373, guid: dde77f83bac93314688f089093c7d0ed, type: 3}
-      propertyPath: m_Enabled
-      value: 1
+    - target: {fileID: 1759212483161611566, guid: dde77f83bac93314688f089093c7d0ed,
+        type: 3}
+      propertyPath: m_Drag
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3315103716823217856, guid: dde77f83bac93314688f089093c7d0ed,
         type: 3}
@@ -927,10 +920,29 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5278733037026597137, guid: dde77f83bac93314688f089093c7d0ed,
         type: 3}
-      propertyPath: playerSpeedChannel
-      value: 
-      objectReference: {fileID: 11400000, guid: 9e561246801562b409461ffd29ba6a39,
-        type: 2}
+      propertyPath: jumpForce
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 5278733037026597137, guid: dde77f83bac93314688f089093c7d0ed,
+        type: 3}
+      propertyPath: groundDrag
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5278733037026597137, guid: dde77f83bac93314688f089093c7d0ed,
+        type: 3}
+      propertyPath: airMultiplier
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5278733037026597137, guid: dde77f83bac93314688f089093c7d0ed,
+        type: 3}
+      propertyPath: decceleration
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 5278733037026597137, guid: dde77f83bac93314688f089093c7d0ed,
+        type: 3}
+      propertyPath: groundDecceleration
+      value: 40
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dde77f83bac93314688f089093c7d0ed, type: 3}
 --- !u!1 &874605735

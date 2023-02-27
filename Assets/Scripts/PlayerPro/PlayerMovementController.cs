@@ -1,23 +1,25 @@
 
 using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerMovementController : MonoBehaviour {
 
     [Header("Movement")]
-    private float moveSpeed;
     [SerializeField] private float walkSpeed = 20;
     [SerializeField] private float sprintSpeed = 20;
     [SerializeField] private float groundDrag = 5;
+    [SerializeField] private float groundDecceleration = 30f;
     [SerializeField] private float wallRunningSpeed;
     [SerializeField] private float climbSpeed;
     [SerializeField] private FloatEventChannelSO playerSpeedChannel;
-
     private float horizontalInput;
     private float verticalInput;
-    private bool isMovingLeft, isMovingRight, isMovingForward;
-    private bool isJumping, isCrouching, isWallRunning, isClimbing;
+    private bool isWallRunning, isClimbing;
     private bool isExitingWall;
+    private float moveSpeed;
+    private Vector3 moveDirection;
+    private Vector3 deccelerationForce;
 
     [Header("Jumping")]
     [SerializeField] private float jumpForce = 35;
@@ -33,18 +35,19 @@ public class PlayerMovementController : MonoBehaviour {
     [Header("Slope Handling")]
     [SerializeField] private float maxSlopeAngle = 40;
     [SerializeField] private Transform orientation;
-    
+
     //Just for showcasing the state debug
     [SerializeField] private MovementState state;
 
     private RaycastHit slopeHit;
-    private bool exitingSlope;
+    private Rigidbody rBody;
     private PlayerInput playerInput;
-    private Vector3 moveDirection;
-    private Rigidbody rb;
-    private float _currentVelocity;
+    private bool exitingSlope;
+    private float currentVelocity;
+    private bool isNoInput;
+    private const float MOVE_FACTOR = 10;
+    private const float SLOPE_FACTOR = 100;
     
-
     #region Properties
     public bool IsWallRunning { get => isWallRunning; set => isWallRunning = value; }
     public bool IsGrounded { get => isGrounded; set => isGrounded = value; }
@@ -54,13 +57,13 @@ public class PlayerMovementController : MonoBehaviour {
 
     private void Awake()
     {
-        rb = GetComponent<Rigidbody>();
+        rBody = GetComponent<Rigidbody>();
         playerInput = GetComponent<PlayerInput>();
     }
 
     private void Start()
     {
-        rb.freezeRotation = true;
+        rBody.freezeRotation = true;
         readyToJump = true;
     }
 
@@ -68,13 +71,18 @@ public class PlayerMovementController : MonoBehaviour {
     {
         CheckGround();
         GetInputs();
-        ControlSpeed();
+        LimitSpeed();
         CheckMovementState();
         HandleDrag();
 
         //Just for debug.
-        _currentVelocity = rb.velocity.magnitude;
-        playerSpeedChannel.OnEventRaised.Invoke(_currentVelocity);
+        currentVelocity = rBody.velocity.magnitude;
+        playerSpeedChannel.OnEventRaised.Invoke(currentVelocity);
+    }
+
+    private void FixedUpdate()
+    {
+        MovePlayer();
     }
 
     private void CheckGround()
@@ -84,16 +92,10 @@ public class PlayerMovementController : MonoBehaviour {
 
     private void HandleDrag()
     {
-        // handle drag
         if (isGrounded)
-            rb.drag = groundDrag;
+            rBody.drag = groundDrag;
         else
-            rb.drag = 0;
-    }
-
-    private void FixedUpdate()
-    {
-        MovePlayer();
+            rBody.drag = 0;
     }
 
     private void GetInputs()
@@ -101,7 +103,6 @@ public class PlayerMovementController : MonoBehaviour {
         horizontalInput = playerInput.GetHorizontalInput();
         verticalInput = playerInput.GetVerticalInput();
 
-        // when to jump
         if (playerInput.GetInputJump() && readyToJump && isGrounded)
         {
             readyToJump = false;
@@ -112,35 +113,30 @@ public class PlayerMovementController : MonoBehaviour {
 
     private void CheckMovementState()
     {
-        // Climbing 
         if(isClimbing)
         {
             state = MovementState.climbing;
             moveSpeed = climbSpeed;
         }
 
-        // Wallruning
         else if(isWallRunning)
         {
             state = MovementState.wallRunning;
             moveSpeed = wallRunningSpeed;
         }
 
-        // Sprinting
         else if (isGrounded && playerInput.GetInputLeftShift())
         {
             state = MovementState.sprinting;
             moveSpeed = sprintSpeed;
         }
 
-        // Walking
         else if (isGrounded)
         {
             state = MovementState.walking;
             moveSpeed = walkSpeed;
         }
 
-        // Air
         else
         {
             state = MovementState.air;
@@ -151,50 +147,62 @@ public class PlayerMovementController : MonoBehaviour {
     {
         if (isExitingWall) return;
 
-        // calculate movement direction
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+        deccelerationForce = -rBody.velocity.normalized * groundDecceleration;
+        isNoInput = moveDirection.magnitude == 0;
 
-        // on slope
         if (OnSlope() && !exitingSlope)
         {
-            rb.AddForce(GetSlopeMoveDirection(moveDirection) * moveSpeed * 20f, ForceMode.Force);
-
-            if (rb.velocity.y > 0)
-                rb.AddForce(Vector3.down * 80f, ForceMode.Force);
+            if (isNoInput)
+                rBody.AddForce(deccelerationForce, ForceMode.Acceleration);
+            else
+                rBody.AddForce(GetSlopeMoveDirection(moveDirection) * moveSpeed * 20f, ForceMode.Force);
+            
+            if (rBody.velocity.y > 0)
+                rBody.AddForce(Vector3.down * SLOPE_FACTOR, ForceMode.Force);
         }
 
-        // on ground
         else if (isGrounded)
-            rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
+        {
+            if (isNoInput) 
+                rBody.AddForce(deccelerationForce, ForceMode.Acceleration); 
+            else
+                rBody.AddForce(moveDirection.normalized * moveSpeed * MOVE_FACTOR, ForceMode.Force);
+        }
 
-        // in air
+        // In air
         else if (!isGrounded)
-            rb.AddForce(moveDirection.normalized * moveSpeed * 10f * airMultiplier, ForceMode.Force);
+            rBody.AddForce(moveDirection.normalized * moveSpeed * MOVE_FACTOR * airMultiplier, ForceMode.Force);
 
-        // turn gravity off while on slope
-        rb.useGravity = !OnSlope();
+        // Turn gravity off while on slope
+        rBody.useGravity = !OnSlope();
     }
 
-    private void ControlSpeed()
+    private void LimitSpeed()
     {
-        // limiting speed on slope
+        // Limiting speed on slope
         if (OnSlope() && !exitingSlope)
         {
-            if (rb.velocity.magnitude > moveSpeed)
-                rb.velocity = rb.velocity.normalized * moveSpeed;
+            if (rBody.velocity.magnitude > moveSpeed)
+                rBody.velocity = rBody.velocity.normalized * moveSpeed;
         }
 
-        // limiting speed on ground or in air
+        // Limiting speed on ground or in air
         else
         {
-            Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+            Vector3 flatVel = new Vector3(rBody.velocity.x, 0f, rBody.velocity.z);
 
-            // limit velocity if needed
+            // Limit velocity if needed
             if (flatVel.magnitude > moveSpeed)
             {
                 Vector3 limitedVel = flatVel.normalized * moveSpeed;
-                rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
+                rBody.velocity = new Vector3(limitedVel.x, rBody.velocity.y, limitedVel.z);
             }
+        }
+
+        if (rBody.velocity.magnitude < 1f)
+        {
+            rBody.velocity = Vector3.zero;
         }
     }
 
@@ -203,14 +211,13 @@ public class PlayerMovementController : MonoBehaviour {
         exitingSlope = true;
 
         // reset y velocity
-        rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-
-        rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+        rBody.velocity = new Vector3(rBody.velocity.x, 0f, rBody.velocity.z);
+        rBody.AddForce(transform.up * jumpForce, ForceMode.Impulse);
     }
+
     private void ResetJump()
     {
         readyToJump = true;
-
         exitingSlope = false;
     }
 

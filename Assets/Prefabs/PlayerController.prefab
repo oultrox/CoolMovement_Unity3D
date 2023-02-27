@@ -76,7 +76,7 @@ GameObject:
   - component: {fileID: 1404389065}
   - component: {fileID: 1404389064}
   m_Layer: 0
-  m_Name: CameraObjectsGrabbed
+  m_Name: GunCamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -798,15 +798,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3ae168812c0ca348aef4d887348973a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  walkSpeed: 20
-  sprintSpeed: 20
-  groundDrag: 5
+  walkSpeed: 15
+  sprintSpeed: 15
+  groundDrag: 1
   wallRunningSpeed: 30
   climbSpeed: 20
-  _getPlayerSpeed: {fileID: 11400000, guid: 9e561246801562b409461ffd29ba6a39, type: 2}
+  playerSpeedChannel: {fileID: 11400000, guid: 9e561246801562b409461ffd29ba6a39, type: 2}
   jumpForce: 35
   jumpCooldown: 0.25
-  airMultiplier: 0.4
+  airMultiplier: 0.2
   playerHeight: 1.8
   whatIsGround:
     serializedVersion: 2
