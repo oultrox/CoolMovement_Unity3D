@@ -53,6 +53,7 @@ public class PlayerMovementController : MonoBehaviour {
     public bool IsGrounded { get => isGrounded; set => isGrounded = value; }
     public bool IsClimbing { get => isClimbing; set => isClimbing = value; }
     public bool IsExitingWall { get => isExitingWall; set => isExitingWall = value; }
+    public MovementState State { get => state; set => state = value; }
     #endregion
 
     private void Awake()
@@ -73,7 +74,6 @@ public class PlayerMovementController : MonoBehaviour {
         GetInputs();
         LimitSpeed();
         CheckMovementState();
-        HandleDrag();
 
         //Just for debug.
         currentVelocity = rBody.velocity.magnitude;
@@ -90,14 +90,6 @@ public class PlayerMovementController : MonoBehaviour {
         isGrounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
     }
 
-    private void HandleDrag()
-    {
-        if (isGrounded)
-            rBody.drag = groundDrag;
-        else
-            rBody.drag = 0;
-    }
-
     private void GetInputs()
     {
         horizontalInput = playerInput.GetHorizontalInput();
@@ -111,6 +103,7 @@ public class PlayerMovementController : MonoBehaviour {
         }
     }
 
+    // TODO: Doing switch case directly.
     private void CheckMovementState()
     {
         if(isClimbing)
@@ -147,10 +140,12 @@ public class PlayerMovementController : MonoBehaviour {
     {
         if (isExitingWall) return;
 
+        // Apply movement force based on direction and preparing in case there's no input.
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
         deccelerationForce = -rBody.velocity.normalized * groundDecceleration;
         isNoInput = moveDirection.magnitude == 0;
 
+        // Slope movement
         if (OnSlope() && !exitingSlope)
         {
             if (isNoInput)
@@ -162,6 +157,7 @@ public class PlayerMovementController : MonoBehaviour {
                 rBody.AddForce(Vector3.down * SLOPE_FACTOR, ForceMode.Force);
         }
 
+        // Ground movement
         else if (isGrounded)
         {
             if (isNoInput) 
@@ -170,7 +166,7 @@ public class PlayerMovementController : MonoBehaviour {
                 rBody.AddForce(moveDirection.normalized * moveSpeed * MOVE_FACTOR, ForceMode.Force);
         }
 
-        // In air
+        // Air movement
         else if (!isGrounded)
             rBody.AddForce(moveDirection.normalized * moveSpeed * MOVE_FACTOR * airMultiplier, ForceMode.Force);
 

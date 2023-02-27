@@ -925,6 +925,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5278733037026597137, guid: dde77f83bac93314688f089093c7d0ed,
         type: 3}
+      propertyPath: walkSpeed
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 5278733037026597137, guid: dde77f83bac93314688f089093c7d0ed,
+        type: 3}
       propertyPath: groundDrag
       value: 0
       objectReference: {fileID: 0}
