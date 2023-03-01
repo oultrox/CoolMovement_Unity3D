@@ -176,7 +176,6 @@ public class PlayerMovementController : MonoBehaviour {
 
     private void LimitSpeed()
     {
-        // Limiting speed on slope
         if (OnSlope() && !exitingSlope)
         {
             if (rBody.velocity.magnitude > moveSpeed)
@@ -187,8 +186,6 @@ public class PlayerMovementController : MonoBehaviour {
         else
         {
             Vector3 flatVel = new Vector3(rBody.velocity.x, 0f, rBody.velocity.z);
-
-            // Limit velocity if needed
             if (flatVel.magnitude > moveSpeed)
             {
                 Vector3 limitedVel = flatVel.normalized * moveSpeed;
