@@ -13,6 +13,7 @@ public class PlayerMovementController : MonoBehaviour {
     [SerializeField] private float wallRunningSpeed;
     [SerializeField] private float climbSpeed;
     [SerializeField] private FloatEventChannelSO playerSpeedChannel;
+    [SerializeField] private FloatEvent _playerSpeedEvent;
     private float horizontalInput;
     private float verticalInput;
     private bool isWallRunning, isClimbing;
@@ -77,7 +78,8 @@ public class PlayerMovementController : MonoBehaviour {
 
         //Just for debug.
         currentVelocity = rBody.velocity.magnitude;
-        playerSpeedChannel.OnEventRaised.Invoke(currentVelocity);
+        playerSpeedChannel.RaiseEvent(currentVelocity);
+        _playerSpeedEvent.Raise(currentVelocity);
     }
 
     private void FixedUpdate()

@@ -14,5 +14,6 @@ public class FloatEventChannelSO : ScriptableObject
         }
         OnEventRaised.Invoke(value);
     }
+    
 
 }
